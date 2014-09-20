@@ -13,7 +13,6 @@ public class PlayerAI implements Player {
 	private Random randomMovePicker;
 	private int randMove;
 
-	@Override
 	public void newGame(TronGameBoard map,  
 			LightCycle playerCycle, LightCycle opponentCycle) {
 		
@@ -22,7 +21,6 @@ public class PlayerAI implements Player {
 		
 	}
 	
-	@Override
 	public PlayerAction getMove(TronGameBoard map,
 			LightCycle playerCycle, LightCycle opponentCycle, int moveNumber) {
 		
