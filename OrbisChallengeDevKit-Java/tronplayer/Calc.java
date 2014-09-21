@@ -128,6 +128,21 @@ public class Calc {
 				|| map.tileType(x, y).equals(TileTypeEnum.LIGHTCYCLE);
 	}
 	
+	public static boolean isBlockedByWall(int x, int y, TronGameBoard map)
+	{
+		int tx, ty;
+		for(int i = 0; i < 4; i++)
+		{
+			tx = x + dx[i];
+			ty = y + dy[i];
+			if(tx >= 0 && tx < map.length() && ty >= 0 && ty < map.length())
+				if(tx == opp.getPosition().x && ty == opp.getPosition().y)
+					return true;
+		}
+		return map.tileType(x, y).equals(TileTypeEnum.WALL) 
+				|| map.tileType(x, y).equals(TileTypeEnum.LIGHTCYCLE);
+	}
+	
 	public static PlayerAction getFirstMove(LightCycle player, Loc dest)
 	{
 		ArrayList<Loc> path = new ArrayList<Loc>();
@@ -204,6 +219,38 @@ public class Calc {
 				ty = y + dy[i];
 				if(tx >= 0 && tx < size && ty >= 0 && ty < size
 						&& !isBlocked(tx, ty, map) && distPlayer[tx][ty] == -1)
+				{
+					distPlayer[tx][ty] = m+1;
+					parPlayer[tx][ty] = new Loc(x, y);
+					q.add(new Loc(tx, ty, m+1));
+				}
+			}
+		}
+	}
+	
+	public static void bfsInvinciblePlayer(int px, int py, int size, TronGameBoard map)
+	{
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				distPlayer[i][j] = -1;
+		distPlayer[px][py] = 0;
+		parPlayer[px][py] = new Loc(px, py);
+		LinkedList<Loc> q = new LinkedList<Loc>();
+		q.add(new Loc(px, py, 0));
+		int x, y, m;
+		int tx, ty;
+		while(!q.isEmpty())
+		{
+			x = q.getFirst().x;
+			y = q.getFirst().y;
+			m = q.getFirst().moves;
+			q.removeFirst();
+			for(int i = 0; i < 4; i++)
+			{
+				tx = x + dx[i];
+				ty = y + dy[i];
+				if(tx >= 0 && tx < size && ty >= 0 && ty < size
+						&& !isBlockedByWall(tx, ty, map) && distPlayer[tx][ty] == -1)
 				{
 					distPlayer[tx][ty] = m+1;
 					parPlayer[tx][ty] = new Loc(x, y);

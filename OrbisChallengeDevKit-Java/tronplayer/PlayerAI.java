@@ -11,6 +11,7 @@ import com.orbischallenge.tron.protocol.TronProtocol.Direction;
 
 public class PlayerAI implements Player {
 	
+	
 	private Random randomMovePicker;
 	private int randMove;
 	private ArrayList<Loc> powerUps;
@@ -133,17 +134,58 @@ public class PlayerAI implements Player {
 				path.remove(path.size()-1);
 			}
 			System.out.println("choose " + mi + " " + mx);
-			if(mi == 0)
+			if(mi == 0 && mx > 2)
 				return PlayerAction.MOVE_UP;
-			else if(mi == 1)
+			else if(mi == 1 && mx > 2)
 				return PlayerAction.MOVE_DOWN;
-			else if(mi == 2)
+			else if(mi == 2 && mx > 2)
 				return PlayerAction.MOVE_LEFT;
-			else if(mi == 3)
+			else if(mi == 3 && mx > 2)
 				return PlayerAction.MOVE_RIGHT;
 			else
 			{
-				return PlayerAction.SAME_DIRECTION;
+				if(playerCycle.hasPowerup()) {
+					if(playerCycle.getPowerup() == PowerUpType.INVINCIBILITY) {
+						Calc.bfsInvinciblePlayer(playerCycle.getPosition().x,
+								playerCycle.getPosition().x, map.length(), map);
+						int best = 0;
+						Loc bestLoc = null;
+						for(int i = 0; i < map.length(); i++)
+							for(int j = 0; j < map.length(); j++)
+								if(Calc.distPlayer[i][j] <= 10) {
+									Loc loc = new Loc(i, j);
+									int cur = Calc.reachablePoints(loc);
+									if(cur > best) {
+										best = cur;
+										bestLoc = loc;
+									}
+								}
+						if(bestLoc == null)
+							return PlayerAction.SAME_DIRECTION;
+						return Calc.getFirstMove(playerCycle, bestLoc);
+					} else {
+						int x = playerCycle.getPosition().x;
+						int y = playerCycle.getPosition().y;
+						if(x > 0 && !playerCycle.getDirection().equals(Direction.RIGHT) &&
+								(!map.tileType(x-1, y).equals(TileTypeEnum.LIGHTCYCLE) ||
+										!map.tileType(x-1, y).equals(TileTypeEnum.WALL)))
+							return PlayerAction.ACTIVATE_POWERUP_MOVE_LEFT;
+						if(x < map.length() - 1 && !playerCycle.getDirection().equals(Direction.LEFT) &&
+								(!map.tileType(x+1, y).equals(TileTypeEnum.LIGHTCYCLE) ||
+										!map.tileType(x+1, y).equals(TileTypeEnum.WALL)))
+							return PlayerAction.ACTIVATE_POWERUP_MOVE_RIGHT;
+						if(y < map.length() - 1 && !playerCycle.getDirection().equals(Direction.UP) &&
+								(!map.tileType(x, y+1).equals(TileTypeEnum.LIGHTCYCLE) ||
+										!map.tileType(x, y+1).equals(TileTypeEnum.WALL)))
+							return PlayerAction.ACTIVATE_POWERUP_MOVE_DOWN;
+						if(y > 0 && !playerCycle.getDirection().equals(Direction.DOWN) &&
+								(!map.tileType(x, y+1).equals(TileTypeEnum.LIGHTCYCLE) ||
+										!map.tileType(x, y+1).equals(TileTypeEnum.WALL)))
+							return PlayerAction.ACTIVATE_POWERUP_MOVE_UP;		
+						return PlayerAction.ACTIVATE_POWERUP;
+					}
+				} else
+					return PlayerAction.SAME_DIRECTION;
 			}
 		}
 	}
