@@ -34,7 +34,8 @@ public class PlayerAI implements Player {
 		Loc powerUp = new Loc(-1, -1);
 		Loc uncontestedPowerUp = new Loc(-1, -1);
 		System.out.println("Hi " + powerUps.size());
-	
+		Loc safe = new Loc(3,10);
+		Loc current = new Loc(playerCycle.getPosition().x, playerCycle.getPosition().y);
 		for(Loc l: powerUps)
 		{
 			int i = l.x;
@@ -42,6 +43,8 @@ public class PlayerAI implements Player {
 			if(!map.tileType(i, j).equals(TileTypeEnum.POWERUP))
 				continue;
 			if(Calc.distPlayer[i][j] == -1)
+				continue;
+			if(!Calc.canEscape(current, new Loc(i,j), safe))
 				continue;
 			if(powerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[powerUp.x][powerUp.y])
 				powerUp = new Loc(i, j);
@@ -68,20 +71,8 @@ public class PlayerAI implements Player {
 		else
 		{
 			System.out.println("randomaaaaaaaaaaaaawwwwwwww");
-			randMove = randomMovePicker.nextInt(5);
-			if(randMove == 0){
-				return PlayerAction.SAME_DIRECTION;
-			}else if(randMove == 1){
-				return PlayerAction.MOVE_RIGHT;
-			}else if(randMove == 2){
-				return PlayerAction.MOVE_UP;
-			}else if(randMove == 3){
-				return PlayerAction.MOVE_LEFT;
-			}else if(randMove == 4){
-				return PlayerAction.MOVE_DOWN;
-			}
-			
-			return PlayerAction.ACTIVATE_POWERUP;
+			currentMove = Calc.getFirstMove(playerCycle, safe);
+			return currentMove;
 		}
 	}
 

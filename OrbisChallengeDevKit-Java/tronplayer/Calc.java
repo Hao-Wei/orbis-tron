@@ -20,8 +20,58 @@ public class Calc {
 	static int[][] distOpp = new int[33][33];
 	static int[] dx = {0, 0, -1, 1};
 	static int[] dy = {-1, 1, 0, 0};
-	
+	static boolean[][] pathBlocked = new boolean[33][33];
+	static int size;
 	static LightCycle opp;
+	static TronGameBoard map;
+	
+	public static boolean canEscape(Loc current, Loc powerup, Loc safe)
+	{
+		ArrayList<Loc> path = new ArrayList<Loc>();
+		getPlayerPath(path, powerup);
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				pathBlocked[i][j] = false;
+		for(Loc l: path)
+			pathBlocked[l.x][l.y] = true;
+		return reachableAvoidingPath(powerup, safe);
+	}
+	
+	public static boolean reachableAvoidingPath(Loc a, Loc b)
+	{
+		boolean[][] visited = new boolean[size][size];
+		LinkedList<Loc> queue = new LinkedList<Loc>();
+		visited[a.x][a.y] = true;
+		queue.add(new Loc(a.x, a.y));
+		int x, y, tx, ty;
+		while(!queue.isEmpty())
+		{
+			x = queue.getFirst().x;
+			y = queue.getFirst().y;
+			queue.removeFirst();
+			if(x == b.x && y == b.y)
+				return true;
+			for(int i = 0; i < 4; i++)
+			{
+				tx = x + dx[i];
+				ty = y + dy[i];
+				if(tx >= 0 && tx < size && ty >= 0 && ty < size
+					&& !isBlockedByPath(tx, ty, map) && !visited[tx][ty])
+				{
+					visited[tx][ty] = true;
+					queue.add(new Loc(tx, ty));
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isBlockedByPath(int x, int y, TronGameBoard map)
+	{
+		if(pathBlocked[x][y])
+			return true;
+		return isBlocked(x, y, map);
+	}
 	
 	public static boolean isBlocked(int x, int y, TronGameBoard map)
 	{
@@ -85,7 +135,9 @@ public class Calc {
 	
 	public static void CalcDistances(LightCycle player, LightCycle opp, TronGameBoard map)
 	{
+		Calc.size = map.length();
 		Calc.opp = opp;
+		Calc.map = map;
 		bfsPlayer(player.getPosition().x, player.getPosition().y, map.length(), map);
 		bfsOpp(opp.getPosition().x, opp.getPosition().y, map.length(), map);
 	}
