@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 import com.orbischallenge.tron.api.PlayerAction;
@@ -12,32 +13,73 @@ public class PlayerAI implements Player {
 	
 	private Random randomMovePicker;
 	private int randMove;
+	private ArrayList<Loc> powerUps;
 
 	public void newGame(TronGameBoard map,  
 			LightCycle playerCycle, LightCycle opponentCycle) {
 		
 		randomMovePicker = new Random();
+		powerUps = new ArrayList<Loc>();
+		for(int i = 0; i < map.length(); i++)
+			for(int j = 0; j < map.length(); j++)
+				if(map.tileType(i, j).equals(TileTypeEnum.POWERUP))
+					powerUps.add(new Loc(i, j));
 		return;
 		
 	}
 	
 	public PlayerAction getMove(TronGameBoard map,
 			LightCycle playerCycle, LightCycle opponentCycle, int moveNumber) {
-		
-		randMove = randomMovePicker.nextInt(5);
-		if(randMove == 0){
-			return PlayerAction.SAME_DIRECTION;
-		}else if(randMove == 1){
-			return PlayerAction.MOVE_RIGHT;
-		}else if(randMove == 2){
-			return PlayerAction.MOVE_UP;
-		}else if(randMove == 3){
-			return PlayerAction.MOVE_LEFT;
-		}else if(randMove == 4){
-			return PlayerAction.MOVE_DOWN;
+		Calc.CalcDistances(playerCycle, opponentCycle, map);
+		Loc powerUp = new Loc(-1, -1);
+		Loc uncontestedPowerUp = new Loc(-1, -1);
+		System.out.println("Hi " + powerUps.size());
+	
+		for(Loc l: powerUps)
+		{
+			int i = l.x;
+			int j = l.y;
+			if(!map.tileType(i, j).equals(TileTypeEnum.POWERUP))
+				continue;
+			if(powerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[powerUp.x][powerUp.y])
+				powerUp = new Loc(i, j);
+			if((uncontestedPowerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[uncontestedPowerUp.x][uncontestedPowerUp.y]) 
+					&& Calc.distPlayer[i][j] < Calc.distOpp[i][j])
+				uncontestedPowerUp = new Loc(i, j);
 		}
-		
-		return PlayerAction.ACTIVATE_POWERUP;
+	
+		PlayerAction currentMove;
+		System.out.println(uncontestedPowerUp.x);
+		System.out.println(powerUp.x);
+		if(uncontestedPowerUp.x != -1)
+		{
+			currentMove = Calc.getFirstMove(playerCycle, uncontestedPowerUp);
+			System.out.println("byw");
+			return currentMove;
+		}
+		else if(powerUp.x != -1)
+		{
+			currentMove = Calc.getFirstMove(playerCycle, powerUp);
+			System.out.println(currentMove.toString());
+			return currentMove;
+		}
+		else
+		{
+			randMove = randomMovePicker.nextInt(5);
+			if(randMove == 0){
+				return PlayerAction.SAME_DIRECTION;
+			}else if(randMove == 1){
+				return PlayerAction.MOVE_RIGHT;
+			}else if(randMove == 2){
+				return PlayerAction.MOVE_UP;
+			}else if(randMove == 3){
+				return PlayerAction.MOVE_LEFT;
+			}else if(randMove == 4){
+				return PlayerAction.MOVE_DOWN;
+			}
+			
+			return PlayerAction.ACTIVATE_POWERUP;
+		}
 	}
 
 }
