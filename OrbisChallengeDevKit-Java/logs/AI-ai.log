@@ -1,0 +1,53 @@
+20/09/2014 08:03:37.761] - [INFO] - Client starting
+20/09/2014 08:03:37.821] - [INFO] - [id: 0xcf339c66] OPEN
+20/09/2014 08:03:37.826] - [INFO] - [id: 0xcf339c66, /127.0.0.1:46049 => localhost/127.0.0.1:19999] BOUND: /127.0.0.1:46049
+20/09/2014 08:03:37.827] - [INFO] - [id: 0xcf339c66, /127.0.0.1:46049 => localhost/127.0.0.1:19999] CONNECTED: localhost/127.0.0.1:19999
+20/09/2014 08:03:38.129] - [INFO] - writing response back for turn 1 for player 1
+20/09/2014 08:03:38.132] - [INFO] - message sent: took 8,719,604
+20/09/2014 08:03:38.243] - [INFO] - writing response back for turn 2 for player 1
+20/09/2014 08:03:38.244] - [INFO] - message sent: took 6,022,854
+20/09/2014 08:03:38.393] - [INFO] - writing response back for turn 3 for player 1
+20/09/2014 08:03:38.394] - [INFO] - message sent: took 6,852,921
+20/09/2014 08:03:38.541] - [INFO] - writing response back for turn 4 for player 1
+20/09/2014 08:03:38.542] - [INFO] - message sent: took 6,117,555
+20/09/2014 08:03:38.689] - [INFO] - writing response back for turn 5 for player 1
+20/09/2014 08:03:38.690] - [INFO] - message sent: took 6,437,334
+20/09/2014 08:03:38.837] - [INFO] - writing response back for turn 6 for player 1
+20/09/2014 08:03:38.838] - [INFO] - message sent: took 6,678,199
+20/09/2014 08:03:38.985] - [INFO] - writing response back for turn 7 for player 1
+20/09/2014 08:03:38.985] - [INFO] - message sent: took 5,879,667
+20/09/2014 08:03:39.133] - [INFO] - writing response back for turn 8 for player 1
+20/09/2014 08:03:39.133] - [INFO] - message sent: took 5,919,751
+20/09/2014 08:03:39.281] - [INFO] - writing response back for turn 9 for player 1
+20/09/2014 08:03:39.282] - [INFO] - message sent: took 6,158,190
+20/09/2014 08:03:39.429] - [INFO] - writing response back for turn 10 for player 1
+20/09/2014 08:03:39.430] - [INFO] - message sent: took 6,705,784
+20/09/2014 08:03:39.577] - [INFO] - writing response back for turn 11 for player 1
+20/09/2014 08:03:39.578] - [INFO] - message sent: took 6,346,838
+20/09/2014 08:03:39.721] - [INFO] - writing response back for turn 12 for player 1
+20/09/2014 08:03:39.722] - [INFO] - message sent: took 6,735,130
+20/09/2014 08:03:39.869] - [INFO] - writing response back for turn 13 for player 1
+20/09/2014 08:03:39.870] - [INFO] - message sent: took 6,377,482
+20/09/2014 08:03:40.013] - [INFO] - writing response back for turn 14 for player 1
+20/09/2014 08:03:40.014] - [INFO] - message sent: took 6,129,282
+20/09/2014 08:03:40.161] - [INFO] - writing response back for turn 15 for player 1
+20/09/2014 08:03:40.162] - [INFO] - message sent: took 6,190,068
+20/09/2014 08:03:40.305] - [INFO] - writing response back for turn 16 for player 1
+20/09/2014 08:03:40.306] - [INFO] - message sent: took 6,232,965
+20/09/2014 08:03:40.449] - [INFO] - writing response back for turn 17 for player 1
+20/09/2014 08:03:40.456] - [INFO] - message sent: took 12,251,945
+20/09/2014 08:03:40.601] - [INFO] - writing response back for turn 18 for player 1
+20/09/2014 08:03:40.602] - [INFO] - message sent: took 6,068,682
+20/09/2014 08:03:40.745] - [INFO] - writing response back for turn 19 for player 1
+20/09/2014 08:03:40.745] - [INFO] - message sent: took 5,865,215
+20/09/2014 08:03:40.889] - [INFO] - writing response back for turn 20 for player 1
+20/09/2014 08:03:40.889] - [INFO] - message sent: took 5,876,314
+20/09/2014 08:03:41.033] - [INFO] - writing response back for turn 21 for player 1
+20/09/2014 08:03:41.033] - [INFO] - message sent: took 5,811,632
+20/09/2014 08:03:41.181] - [INFO] - writing response back for turn 22 for player 1
+20/09/2014 08:03:41.183] - [SEVERE] - Unexpected exception from upstream. java.net.SocketException: Broken pipe
+
+20/09/2014 08:03:41.184] - [INFO] - [id: 0xcf339c66, /127.0.0.1:46049 :> localhost/127.0.0.1:19999] DISCONNECTED
+20/09/2014 08:03:41.185] - [INFO] - [id: 0xcf339c66, /127.0.0.1:46049 :> localhost/127.0.0.1:19999] UNBOUND
+20/09/2014 08:03:41.185] - [INFO] - [id: 0xcf339c66, /127.0.0.1:46049 :> localhost/127.0.0.1:19999] CLOSED
+20/09/2014 08:03:41.185] - [INFO] - message sent: took 9,943,185
