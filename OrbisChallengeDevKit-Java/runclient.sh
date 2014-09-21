@@ -8,4 +8,4 @@ BUILD_CLASS_PATH="$JAR_PATH:$CLASS_PATH"
 SRC_PATH="$DIR_PATH/tronplayer/PlayerAI.java"
 
 # Run
-java -classpath $BUILD_CLASS_PATH RunClient $@
+java -classpath $BUILD_CLASS_PATH RunClient $@ 2>/dev/null
