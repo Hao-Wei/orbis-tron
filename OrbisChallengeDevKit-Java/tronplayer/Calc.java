@@ -25,20 +25,9 @@ public class Calc {
 	static LightCycle opp;
 	static TronGameBoard map;
 	
-	public static boolean canEscape(Loc current, Loc powerup, Loc safe)
+	public static int reachablePoints(Loc a)
 	{
-		ArrayList<Loc> path = new ArrayList<Loc>();
-		getPlayerPath(path, powerup);
-		for(int i = 0; i < size; i++)
-			for(int j = 0; j < size; j++)
-				pathBlocked[i][j] = false;
-		for(Loc l: path)
-			pathBlocked[l.x][l.y] = true;
-		return reachableAvoidingPath(powerup, safe);
-	}
-	
-	public static boolean reachableAvoidingPath(Loc a, Loc b)
-	{
+		int count = 0;
 		boolean[][] visited = new boolean[size][size];
 		LinkedList<Loc> queue = new LinkedList<Loc>();
 		visited[a.x][a.y] = true;
@@ -49,8 +38,48 @@ public class Calc {
 			x = queue.getFirst().x;
 			y = queue.getFirst().y;
 			queue.removeFirst();
-			if(x == b.x && y == b.y)
-				return true;
+			count++;
+			for(int i = 0; i < 4; i++)
+			{
+				tx = x + dx[i];
+				ty = y + dy[i];
+				if(tx >= 0 && tx < size && ty >= 0 && ty < size
+					&& !isBlocked(tx, ty, map) && !visited[tx][ty])
+				{
+					visited[tx][ty] = true;
+					queue.add(new Loc(tx, ty));
+				}
+			}
+		}
+		return count;
+	}
+	
+	public static int escapeSquaresAvoidingPath(Loc current, Loc powerup)
+	{
+		ArrayList<Loc> path = new ArrayList<Loc>();
+		getPlayerPath(path, powerup);
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				pathBlocked[i][j] = false;
+		for(Loc l: path)
+			pathBlocked[l.x][l.y] = true;
+		return reachablePointsAvoidingPath(powerup);
+	}
+	
+	public static int reachablePointsAvoidingPath(Loc a)
+	{
+		int count = 0;
+		boolean[][] visited = new boolean[size][size];
+		LinkedList<Loc> queue = new LinkedList<Loc>();
+		visited[a.x][a.y] = true;
+		queue.add(new Loc(a.x, a.y));
+		int x, y, tx, ty;
+		while(!queue.isEmpty())
+		{
+			x = queue.getFirst().x;
+			y = queue.getFirst().y;
+			queue.removeFirst();
+			count++;
 			for(int i = 0; i < 4; i++)
 			{
 				tx = x + dx[i];
@@ -63,7 +92,7 @@ public class Calc {
 				}
 			}
 		}
-		return false;
+		return count;
 	}
 	
 	public static boolean isBlockedByPath(int x, int y, TronGameBoard map)

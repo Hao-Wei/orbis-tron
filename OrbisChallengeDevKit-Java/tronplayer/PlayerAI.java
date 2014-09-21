@@ -14,7 +14,9 @@ public class PlayerAI implements Player {
 	private Random randomMovePicker;
 	private int randMove;
 	private ArrayList<Loc> powerUps;
-
+	static int[] dx = {0, 0, -1, 1};
+	static int[] dy = {-1, 1, 0, 0};
+	
 	public void newGame(TronGameBoard map,  
 			LightCycle playerCycle, LightCycle opponentCycle) {
 		
@@ -34,8 +36,9 @@ public class PlayerAI implements Player {
 		Loc powerUp = new Loc(-1, -1);
 		Loc uncontestedPowerUp = new Loc(-1, -1);
 		System.out.println("Hi " + powerUps.size());
-		Loc safe = new Loc(3,10);
 		Loc current = new Loc(playerCycle.getPosition().x, playerCycle.getPosition().y);
+		int numReachablePoints = Calc.reachablePoints(current);
+		int numReachablePointsAvoidingPath;
 		for(Loc l: powerUps)
 		{
 			int i = l.x;
@@ -44,7 +47,8 @@ public class PlayerAI implements Player {
 				continue;
 			if(Calc.distPlayer[i][j] == -1)
 				continue;
-			if(!Calc.canEscape(current, new Loc(i,j), safe))
+			numReachablePointsAvoidingPath = Calc.escapeSquaresAvoidingPath(current, new Loc(i,j));
+			if(numReachablePointsAvoidingPath < 11 || numReachablePointsAvoidingPath*4 < numReachablePoints)
 				continue;
 			if(powerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[powerUp.x][powerUp.y])
 				powerUp = new Loc(i, j);
@@ -71,8 +75,26 @@ public class PlayerAI implements Player {
 		else
 		{
 			System.out.println("randomaaaaaaaaaaaaawwwwwwww");
-			currentMove = Calc.getFirstMove(playerCycle, safe);
-			return currentMove;
+			int mx = -1, mi = -1;
+			int tx, ty;
+			for(int i = 0; i < 4; i++)
+			{
+				tx = current.x + dx[i];
+				ty = current.y + dy[i];
+				if(Calc.distPlayer[tx][ty] != -1 && Calc.escapeSquaresAvoidingPath(current, new Loc(tx,ty)) > mx)
+				{
+					mx = Calc.escapeSquaresAvoidingPath(current, new Loc(tx,ty));
+					mi = i;
+				}
+			}
+			if(mi == 0)
+				return PlayerAction.MOVE_UP;
+			else if(mi == 1)
+				return PlayerAction.MOVE_DOWN;
+			else if(mi == 2)
+				return PlayerAction.MOVE_LEFT;
+			else
+				return PlayerAction.MOVE_RIGHT;
 		}
 	}
 
