@@ -82,31 +82,55 @@ public class PlayerAI implements Player {
 			int mx = 0, mi = -1;
 			int tx, ty;
 			ArrayList<Loc> path = new ArrayList<Loc>();
+			path.add(new Loc(current.x, current.y));
 			for(int i = 0; i < 4; i++)
 			{
 				tx = current.x + dx[i];
-				ty = current.y + dy[i];
-				path.clear();
-				path.add(new Loc(current.x, current.y));
+				ty = current.y + dy[i];			
 				path.add(new Loc(tx, ty));
-				if(Calc.isBlocked(tx, ty, map)) continue;
-				for(int j = 0; j < 4; j++)
+				if(!Calc.isBlocked(tx, ty, map))
 				{
-					tx = current.x + dx[i] + dx[j];
-					ty = current.y + dy[i] + dy[j];
-					if(Calc.isBlocked(tx, ty, map))
-						continue;
-					for(int k = 0; k < path.size(); k++)
-						if(path.get(k).x == tx && path.get(k).y == ty)
-							continue;
-					path.add(new Loc(tx, ty));
-					int numEscapeSquares = Calc.escapeSquaresAvoidingPath(path);
-					if(!Calc.isBlocked(tx, ty, map) && numEscapeSquares > mx)
+					for(int j = 0; j < 4; j++)
 					{
-						mx = numEscapeSquares;
-						mi = i;
+						tx = current.x + dx[i] + dx[j];
+						ty = current.y + dy[i] + dy[j];
+						if(Calc.isBlocked(tx, ty, map))
+							continue;
+						boolean exit = false;
+						for(int k = 0; k < path.size(); k++)
+							if(path.get(k).x == tx && path.get(k).y == ty)
+								exit = true;
+						if(exit)
+							continue;
+						path.add(new Loc(tx, ty));
+						for(int k = 0; k < 4; k++)
+						{
+							tx = current.x + dx[i] + dx[j] + dx[k];
+							ty = current.y + dy[i] + dy[j] + dy[k];
+							if(Calc.isBlocked(tx, ty, map))
+								continue;
+							exit = false;
+							for(int l = 0; l < path.size(); l++)
+								if(path.get(l).x == tx && path.get(l).y == ty)
+									exit = true;
+							if(exit)
+								continue;
+							path.add(new Loc(tx, ty));
+							for(int l = 0; l < path.size(); l++)
+								System.out.println("(" + path.get(l).x + " " + path.get(l).y + ")");
+							System.out.println();
+							int numEscapeSquares = Calc.escapeSquaresAvoidingPath(path);
+							if(!Calc.isBlocked(tx, ty, map) && numEscapeSquares > mx)
+							{
+								mx = numEscapeSquares;
+								mi = i;
+							}
+							path.remove(path.size()-1);
+						}
+						path.remove(path.size()-1);
 					}
 				}
+				path.remove(path.size()-1);
 			}
 			System.out.println("choose " + mi + " " + mx);
 			if(mi == 0)
@@ -115,8 +139,12 @@ public class PlayerAI implements Player {
 				return PlayerAction.MOVE_DOWN;
 			else if(mi == 2)
 				return PlayerAction.MOVE_LEFT;
-			else
+			else if(mi == 3)
 				return PlayerAction.MOVE_RIGHT;
+			else
+			{
+				return PlayerAction.SAME_DIRECTION;
+			}
 		}
 	}
 
