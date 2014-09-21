@@ -20,8 +20,97 @@ public class Calc {
 	static int[][] distOpp = new int[33][33];
 	static int[] dx = {0, 0, -1, 1};
 	static int[] dy = {-1, 1, 0, 0};
-	
+	static boolean[][] pathBlocked = new boolean[33][33];
+	static int size;
 	static LightCycle opp;
+	static TronGameBoard map;
+	
+	public static int reachablePoints(Loc a)
+	{
+		int count = 0;
+		boolean[][] visited = new boolean[size][size];
+		LinkedList<Loc> queue = new LinkedList<Loc>();
+		visited[a.x][a.y] = true;
+		queue.add(new Loc(a.x, a.y));
+		int x, y, tx, ty;
+		while(!queue.isEmpty())
+		{
+			x = queue.getFirst().x;
+			y = queue.getFirst().y;
+			queue.removeFirst();
+			count++;
+			for(int i = 0; i < 4; i++)
+			{
+				tx = x + dx[i];
+				ty = y + dy[i];
+				if(tx >= 0 && tx < size && ty >= 0 && ty < size
+					&& !isBlocked(tx, ty, map) && !visited[tx][ty])
+				{
+					visited[tx][ty] = true;
+					queue.add(new Loc(tx, ty));
+				}
+			}
+		}
+		return count;
+	}
+	
+	public static int escapeSquaresAvoidingPath(Loc current, Loc powerup)
+	{
+		ArrayList<Loc> path = new ArrayList<Loc>();
+		getPlayerPath(path, powerup);
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				pathBlocked[i][j] = false;
+		for(Loc l: path)
+			pathBlocked[l.x][l.y] = true;
+		return reachablePointsAvoidingPath(powerup);
+	}
+	
+	public static int escapeSquaresAvoidingPath(ArrayList<Loc> path)
+	{
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				pathBlocked[i][j] = false;
+		for(Loc l: path)
+			pathBlocked[l.x][l.y] = true;
+		return reachablePointsAvoidingPath(path.get(path.size()-1));
+	}
+	
+	public static int reachablePointsAvoidingPath(Loc a)
+	{
+		int count = 0;
+		boolean[][] visited = new boolean[size][size];
+		LinkedList<Loc> queue = new LinkedList<Loc>();
+		visited[a.x][a.y] = true;
+		queue.add(new Loc(a.x, a.y));
+		int x, y, tx, ty;
+		while(!queue.isEmpty())
+		{
+			x = queue.getFirst().x;
+			y = queue.getFirst().y;
+			queue.removeFirst();
+			count++;
+			for(int i = 0; i < 4; i++)
+			{
+				tx = x + dx[i];
+				ty = y + dy[i];
+				if(tx >= 0 && tx < size && ty >= 0 && ty < size
+					&& !isBlockedByPath(tx, ty, map) && !visited[tx][ty])
+				{
+					visited[tx][ty] = true;
+					queue.add(new Loc(tx, ty));
+				}
+			}
+		}
+		return count;
+	}
+	
+	public static boolean isBlockedByPath(int x, int y, TronGameBoard map)
+	{
+		if(pathBlocked[x][y])
+			return true;
+		return isBlocked(x, y, map);
+	}
 	
 	public static boolean isBlocked(int x, int y, TronGameBoard map)
 	{
@@ -36,6 +125,21 @@ public class Calc {
 		}
 		return map.tileType(x, y).equals(TileTypeEnum.WALL) 
 				|| map.tileType(x, y).equals(TileTypeEnum.TRAIL)
+				|| map.tileType(x, y).equals(TileTypeEnum.LIGHTCYCLE);
+	}
+	
+	public static boolean isBlockedByWall(int x, int y, TronGameBoard map)
+	{
+		int tx, ty;
+		for(int i = 0; i < 4; i++)
+		{
+			tx = x + dx[i];
+			ty = y + dy[i];
+			if(tx >= 0 && tx < map.length() && ty >= 0 && ty < map.length())
+				if(tx == opp.getPosition().x && ty == opp.getPosition().y)
+					return true;
+		}
+		return map.tileType(x, y).equals(TileTypeEnum.WALL) 
 				|| map.tileType(x, y).equals(TileTypeEnum.LIGHTCYCLE);
 	}
 	
@@ -85,7 +189,9 @@ public class Calc {
 	
 	public static void CalcDistances(LightCycle player, LightCycle opp, TronGameBoard map)
 	{
+		Calc.size = map.length();
 		Calc.opp = opp;
+		Calc.map = map;
 		bfsPlayer(player.getPosition().x, player.getPosition().y, map.length(), map);
 		bfsOpp(opp.getPosition().x, opp.getPosition().y, map.length(), map);
 	}
@@ -113,6 +219,38 @@ public class Calc {
 				ty = y + dy[i];
 				if(tx >= 0 && tx < size && ty >= 0 && ty < size
 						&& !isBlocked(tx, ty, map) && distPlayer[tx][ty] == -1)
+				{
+					distPlayer[tx][ty] = m+1;
+					parPlayer[tx][ty] = new Loc(x, y);
+					q.add(new Loc(tx, ty, m+1));
+				}
+			}
+		}
+	}
+	
+	public static void bfsInvinciblePlayer(int px, int py, int size, TronGameBoard map)
+	{
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				distPlayer[i][j] = -1;
+		distPlayer[px][py] = 0;
+		parPlayer[px][py] = new Loc(px, py);
+		LinkedList<Loc> q = new LinkedList<Loc>();
+		q.add(new Loc(px, py, 0));
+		int x, y, m;
+		int tx, ty;
+		while(!q.isEmpty())
+		{
+			x = q.getFirst().x;
+			y = q.getFirst().y;
+			m = q.getFirst().moves;
+			q.removeFirst();
+			for(int i = 0; i < 4; i++)
+			{
+				tx = x + dx[i];
+				ty = y + dy[i];
+				if(tx >= 0 && tx < size && ty >= 0 && ty < size
+						&& !isBlockedByWall(tx, ty, map) && distPlayer[tx][ty] == -1)
 				{
 					distPlayer[tx][ty] = m+1;
 					parPlayer[tx][ty] = new Loc(x, y);

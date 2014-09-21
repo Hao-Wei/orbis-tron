@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<matches>
+  <match>
+    <score>
+      <playername>AI</playername>
+      <value>1061</value>
+    </score>
+    <score>
+      <playername>human</playername>
+      <value>204</value>
+    </score>
+  </match>
+</matches>

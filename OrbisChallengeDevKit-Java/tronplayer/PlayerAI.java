@@ -11,13 +11,17 @@ import com.orbischallenge.tron.protocol.TronProtocol.Direction;
 
 public class PlayerAI implements Player {
 	
+	
 	private Random randomMovePicker;
 	private int randMove;
 	private ArrayList<Loc> powerUps;
-
+	static int[] dx = {0, 0, -1, 1};
+	static int[] dy = {-1, 1, 0, 0};
+	long mxtime;
+	
 	public void newGame(TronGameBoard map,  
 			LightCycle playerCycle, LightCycle opponentCycle) {
-		
+		mxtime = 0;
 		randomMovePicker = new Random();
 		powerUps = new ArrayList<Loc>();
 		for(int i = 0; i < map.length(); i++)
@@ -29,59 +33,194 @@ public class PlayerAI implements Player {
 	}
 	
 	public PlayerAction getMove(TronGameBoard map,
-			LightCycle playerCycle, LightCycle opponentCycle, int moveNumber) {
-		Calc.CalcDistances(playerCycle, opponentCycle, map);
-		Loc powerUp = new Loc(-1, -1);
-		Loc uncontestedPowerUp = new Loc(-1, -1);
-		System.out.println("Hi " + powerUps.size());
-	
-		for(Loc l: powerUps)
-		{
-			int i = l.x;
-			int j = l.y;
-			if(!map.tileType(i, j).equals(TileTypeEnum.POWERUP))
-				continue;
-			if(Calc.distPlayer[i][j] == -1)
-				continue;
-			if(powerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[powerUp.x][powerUp.y])
-				powerUp = new Loc(i, j);
-			if((uncontestedPowerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[uncontestedPowerUp.x][uncontestedPowerUp.y]) 
-					&& (Calc.distOpp[i][j] == -1 || Calc.distPlayer[i][j] < Calc.distOpp[i][j]))
-				uncontestedPowerUp = new Loc(i, j);
-		}
-	
-		PlayerAction currentMove;
-		System.out.println(uncontestedPowerUp.x);
-		System.out.println(powerUp.x);
-		if(uncontestedPowerUp.x != -1)
-		{
-			currentMove = Calc.getFirstMove(playerCycle, uncontestedPowerUp);
-			System.out.println("byw");
-			return currentMove;
-		}
-		else if(powerUp.x != -1)
-		{
-			currentMove = Calc.getFirstMove(playerCycle, powerUp);
-			System.out.println(currentMove.toString());
-			return currentMove;
-		}
-		else
-		{
-			System.out.println("randomaaaaaaaaaaaaawwwwwwww");
-			randMove = randomMovePicker.nextInt(5);
-			if(randMove == 0){
-				return PlayerAction.SAME_DIRECTION;
-			}else if(randMove == 1){
-				return PlayerAction.MOVE_RIGHT;
-			}else if(randMove == 2){
-				return PlayerAction.MOVE_UP;
-			}else if(randMove == 3){
-				return PlayerAction.MOVE_LEFT;
-			}else if(randMove == 4){
-				return PlayerAction.MOVE_DOWN;
+			LightCycle playerCycle, LightCycle opponentCycle, int moveNumber)
+	{
+		try {
+			long time1 = System.currentTimeMillis();
+			Calc.CalcDistances(playerCycle, opponentCycle, map);
+			if(playerCycle.isInvincible())
+				Calc.bfsInvinciblePlayer(playerCycle.getPosition().x,
+						playerCycle.getPosition().y, map.length(), map);
+			Loc powerUp = new Loc(-1, -1);
+			Loc uncontestedPowerUp = new Loc(-1, -1);
+			Loc current = new Loc(playerCycle.getPosition().x, playerCycle.getPosition().y);
+			int numReachablePoints = Calc.reachablePoints(current);
+			int numReachablePointsAvoidingPath;
+			for(int i = 0; i < powerUps.size(); i++)
+				if(!map.tileType(powerUps.get(i).x, powerUps.get(i).y).equals(TileTypeEnum.POWERUP))
+				{
+					powerUps.remove(i);
+					i--;
+				}
+			for(Loc l: powerUps)
+			{
+				int i = l.x;
+				int j = l.y;
+				if(Calc.distPlayer[i][j] == -1)
+					continue;
+				numReachablePointsAvoidingPath = Calc.escapeSquaresAvoidingPath(current, new Loc(i,j));
+				if(numReachablePointsAvoidingPath < 11 || numReachablePointsAvoidingPath*4 < numReachablePoints)
+					continue;
+				if(powerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[powerUp.x][powerUp.y])
+					powerUp = new Loc(i, j);
+				if((uncontestedPowerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[uncontestedPowerUp.x][uncontestedPowerUp.y]) 
+						&& (Calc.distOpp[i][j] == -1 || Calc.distPlayer[i][j] < Calc.distOpp[i][j]))
+					uncontestedPowerUp = new Loc(i, j);
 			}
-			
-			return PlayerAction.ACTIVATE_POWERUP;
+		
+			PlayerAction currentMove;
+			if(uncontestedPowerUp.x != -1)
+			{
+				currentMove = Calc.getFirstMove(playerCycle, uncontestedPowerUp);
+				System.out.println("byw");
+				long time2 = System.currentTimeMillis();
+				if(time2-time1 > mxtime)
+					mxtime = time2-time1;
+				System.out.println(mxtime);
+				return currentMove;
+			}
+			else if(powerUp.x != -1)
+			{
+				currentMove = Calc.getFirstMove(playerCycle, powerUp);
+				long time2 = System.currentTimeMillis();
+				if(time2-time1 > mxtime)
+					mxtime = time2-time1;
+				System.out.println(mxtime);
+				return currentMove;
+			}
+			else
+			{
+				int mx = 0, mi = -1;
+				int tx, ty;
+				ArrayList<Loc> path = new ArrayList<Loc>();
+				path.add(new Loc(current.x, current.y));
+				for(int i = 0; i < 4; i++)
+				{
+					tx = current.x + dx[i];
+					ty = current.y + dy[i];			
+					path.add(new Loc(tx, ty));
+					if(!Calc.isBlocked(tx, ty, map))
+					{
+						for(int j = 0; j < 4; j++)
+						{
+							tx = current.x + dx[i] + dx[j];
+							ty = current.y + dy[i] + dy[j];
+							if(Calc.isBlocked(tx, ty, map))
+								continue;
+							boolean exit = false;
+							for(int k = 0; k < path.size(); k++)
+								if(path.get(k).x == tx && path.get(k).y == ty)
+									exit = true;
+							if(exit)
+								continue;
+							path.add(new Loc(tx, ty));
+							for(int k = 0; k < 4; k++)
+							{
+								tx = current.x + dx[i] + dx[j] + dx[k];
+								ty = current.y + dy[i] + dy[j] + dy[k];
+								if(Calc.isBlocked(tx, ty, map))
+									continue;
+								exit = false;
+								for(int l = 0; l < path.size(); l++)
+									if(path.get(l).x == tx && path.get(l).y == ty)
+										exit = true;
+								if(exit)
+									continue;
+								path.add(new Loc(tx, ty));
+								int numEscapeSquares = Calc.escapeSquaresAvoidingPath(path);
+								if(!Calc.isBlocked(tx, ty, map) && numEscapeSquares > mx)
+								{
+									mx = numEscapeSquares;
+									mi = i;
+								}
+								path.remove(path.size()-1);
+							}
+							path.remove(path.size()-1);
+						}
+					}
+					path.remove(path.size()-1);
+				}
+				long time2 = System.currentTimeMillis();
+				if(time2-time1 > mxtime)
+					mxtime = time2-time1;
+				System.out.println(mxtime);
+				if(mi == 0 && mx > 0)
+					return PlayerAction.MOVE_UP;
+				else if(mi == 1 && mx > 0)
+					return PlayerAction.MOVE_DOWN;
+				else if(mi == 2 && mx > 0)
+					return PlayerAction.MOVE_LEFT;
+				else if(mi == 3 && mx > 0)
+					return PlayerAction.MOVE_RIGHT;
+				else
+				{
+					if(playerCycle.hasPowerup()) {
+						if(playerCycle.getPowerup().equals(PowerUpType.INVINCIBILITY)) {
+							Calc.bfsInvinciblePlayer(playerCycle.getPosition().x,
+									playerCycle.getPosition().y, map.length(), map);
+							int best = 0;
+							Loc bestLoc = null;
+							int cnt = 0;
+				Outer:		for(int i = 0; i < map.length(); i++)
+								for(int j = 0; j < map.length(); j++)
+									if(Calc.distPlayer[i][j] <= 10) {
+										cnt++;
+										if(cnt > 10)
+											break Outer;
+										Loc loc = new Loc(i, j);
+										int cur = Calc.reachablePoints(loc);
+										if(cur > best) {
+											best = cur;
+											bestLoc = loc;
+										}
+									}
+							time2 = System.currentTimeMillis();
+							if(time2-time1 > mxtime)
+								mxtime = time2-time1;
+							System.out.println(mxtime);
+							if(bestLoc == null)
+								return PlayerAction.ACTIVATE_POWERUP;
+							PlayerAction pa = Calc.getFirstMove(playerCycle, bestLoc);
+							if(pa.equals(PlayerAction.MOVE_DOWN))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_DOWN;
+							else if(pa.equals(PlayerAction.MOVE_LEFT))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_LEFT;
+							else if(pa.equals(PlayerAction.MOVE_RIGHT))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_RIGHT;
+							else if(pa.equals(PlayerAction.MOVE_UP))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_UP;
+							return PlayerAction.ACTIVATE_POWERUP;
+						} else {
+							int x = playerCycle.getPosition().x;
+							int y = playerCycle.getPosition().y;
+							if(x > 0 && !playerCycle.getDirection().equals(Direction.RIGHT) &&
+									(!map.tileType(x-1, y).equals(TileTypeEnum.LIGHTCYCLE) ||
+											!map.tileType(x-1, y).equals(TileTypeEnum.WALL)))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_LEFT;
+							if(x < map.length() - 1 && !playerCycle.getDirection().equals(Direction.LEFT) &&
+									(!map.tileType(x+1, y).equals(TileTypeEnum.LIGHTCYCLE) ||
+											!map.tileType(x+1, y).equals(TileTypeEnum.WALL)))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_RIGHT;
+							if(y < map.length() - 1 && !playerCycle.getDirection().equals(Direction.UP) &&
+									(!map.tileType(x, y+1).equals(TileTypeEnum.LIGHTCYCLE) ||
+											!map.tileType(x, y+1).equals(TileTypeEnum.WALL)))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_DOWN;
+							if(y > 0 && !playerCycle.getDirection().equals(Direction.DOWN) &&
+									(!map.tileType(x, y-1).equals(TileTypeEnum.LIGHTCYCLE) ||
+											!map.tileType(x, y-1).equals(TileTypeEnum.WALL)))
+								return PlayerAction.ACTIVATE_POWERUP_MOVE_UP;
+							time2 = System.currentTimeMillis();
+							if(time2-time1 > mxtime)
+								mxtime = time2-time1;
+							System.out.println(mxtime);
+							return PlayerAction.ACTIVATE_POWERUP;
+						}
+					} else
+						return PlayerAction.SAME_DIRECTION;
+				}
+			}
+		} catch(Exception e) {
+			return PlayerAction.SAME_DIRECTION;
 		}
 	}
 
