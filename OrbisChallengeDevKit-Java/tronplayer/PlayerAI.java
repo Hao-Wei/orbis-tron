@@ -41,10 +41,12 @@ public class PlayerAI implements Player {
 			int j = l.y;
 			if(!map.tileType(i, j).equals(TileTypeEnum.POWERUP))
 				continue;
+			if(Calc.distPlayer[i][j] == -1)
+				continue;
 			if(powerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[powerUp.x][powerUp.y])
 				powerUp = new Loc(i, j);
 			if((uncontestedPowerUp.x == -1 || Calc.distPlayer[i][j] < Calc.distPlayer[uncontestedPowerUp.x][uncontestedPowerUp.y]) 
-					&& Calc.distPlayer[i][j] < Calc.distOpp[i][j])
+					&& (Calc.distOpp[i][j] == -1 || Calc.distPlayer[i][j] < Calc.distOpp[i][j]))
 				uncontestedPowerUp = new Loc(i, j);
 		}
 	
@@ -65,6 +67,7 @@ public class PlayerAI implements Player {
 		}
 		else
 		{
+			System.out.println("randomaaaaaaaaaaaaawwwwwwww");
 			randMove = randomMovePicker.nextInt(5);
 			if(randMove == 0){
 				return PlayerAction.SAME_DIRECTION;

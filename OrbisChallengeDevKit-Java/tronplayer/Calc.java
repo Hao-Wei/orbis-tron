@@ -21,8 +21,19 @@ public class Calc {
 	static int[] dx = {0, 0, -1, 1};
 	static int[] dy = {-1, 1, 0, 0};
 	
+	static LightCycle opp;
+	
 	public static boolean isBlocked(int x, int y, TronGameBoard map)
 	{
+		int tx, ty;
+		for(int i = 0; i < 4; i++)
+		{
+			tx = x + dx[i];
+			ty = y + dy[i];
+			if(tx >= 0 && tx < map.length() && ty >= 0 && ty < map.length())
+				if(tx == opp.getPosition().x && ty == opp.getPosition().y)
+					return true;
+		}
 		return map.tileType(x, y).equals(TileTypeEnum.WALL) 
 				|| map.tileType(x, y).equals(TileTypeEnum.TRAIL)
 				|| map.tileType(x, y).equals(TileTypeEnum.LIGHTCYCLE);
@@ -74,6 +85,7 @@ public class Calc {
 	
 	public static void CalcDistances(LightCycle player, LightCycle opp, TronGameBoard map)
 	{
+		Calc.opp = opp;
 		bfsPlayer(player.getPosition().x, player.getPosition().y, map.length(), map);
 		bfsOpp(opp.getPosition().x, opp.getPosition().y, map.length(), map);
 	}
