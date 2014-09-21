@@ -116,8 +116,6 @@ public class PlayerAI implements Player {
 							if(exit)
 								continue;
 							path.add(new Loc(tx, ty));
-							for(int l = 0; l < path.size(); l++)
-								System.out.println("(" + path.get(l).x + " " + path.get(l).y + ")");
 							System.out.println();
 							int numEscapeSquares = Calc.escapeSquaresAvoidingPath(path);
 							if(!Calc.isBlocked(tx, ty, map) && numEscapeSquares > mx)
