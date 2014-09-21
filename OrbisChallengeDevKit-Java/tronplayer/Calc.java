@@ -66,6 +66,16 @@ public class Calc {
 		return reachablePointsAvoidingPath(powerup);
 	}
 	
+	public static int escapeSquaresAvoidingPath(ArrayList<Loc> path)
+	{
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				pathBlocked[i][j] = false;
+		for(Loc l: path)
+			pathBlocked[l.x][l.y] = true;
+		return reachablePointsAvoidingPath(path.get(path.size()-1));
+	}
+	
 	public static int reachablePointsAvoidingPath(Loc a)
 	{
 		int count = 0;

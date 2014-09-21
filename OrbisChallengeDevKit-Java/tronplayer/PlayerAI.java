@@ -39,12 +39,16 @@ public class PlayerAI implements Player {
 		Loc current = new Loc(playerCycle.getPosition().x, playerCycle.getPosition().y);
 		int numReachablePoints = Calc.reachablePoints(current);
 		int numReachablePointsAvoidingPath;
+		for(int i = 0; i < powerUps.size(); i++)
+			if(!map.tileType(powerUps.get(i).x, powerUps.get(i).y).equals(TileTypeEnum.POWERUP))
+			{
+				powerUps.remove(i);
+				i--;
+			}
 		for(Loc l: powerUps)
 		{
 			int i = l.x;
 			int j = l.y;
-			if(!map.tileType(i, j).equals(TileTypeEnum.POWERUP))
-				continue;
 			if(Calc.distPlayer[i][j] == -1)
 				continue;
 			numReachablePointsAvoidingPath = Calc.escapeSquaresAvoidingPath(current, new Loc(i,j));
@@ -75,18 +79,36 @@ public class PlayerAI implements Player {
 		else
 		{
 			System.out.println("randomaaaaaaaaaaaaawwwwwwww");
-			int mx = -1, mi = -1;
+			int mx = 0, mi = -1;
 			int tx, ty;
+			ArrayList<Loc> path = new ArrayList<Loc>();
 			for(int i = 0; i < 4; i++)
 			{
 				tx = current.x + dx[i];
 				ty = current.y + dy[i];
-				if(Calc.distPlayer[tx][ty] != -1 && Calc.escapeSquaresAvoidingPath(current, new Loc(tx,ty)) > mx)
+				path.clear();
+				path.add(new Loc(current.x, current.y));
+				path.add(new Loc(tx, ty));
+				if(Calc.isBlocked(tx, ty, map)) continue;
+				for(int j = 0; j < 4; j++)
 				{
-					mx = Calc.escapeSquaresAvoidingPath(current, new Loc(tx,ty));
-					mi = i;
+					tx = current.x + dx[i] + dx[j];
+					ty = current.y + dy[i] + dy[j];
+					if(Calc.isBlocked(tx, ty, map))
+						continue;
+					for(int k = 0; k < path.size(); k++)
+						if(path.get(k).x == tx && path.get(k).y == ty)
+							continue;
+					path.add(new Loc(tx, ty));
+					int numEscapeSquares = Calc.escapeSquaresAvoidingPath(path);
+					if(!Calc.isBlocked(tx, ty, map) && numEscapeSquares > mx)
+					{
+						mx = numEscapeSquares;
+						mi = i;
+					}
 				}
 			}
+			System.out.println("choose " + mi + " " + mx);
 			if(mi == 0)
 				return PlayerAction.MOVE_UP;
 			else if(mi == 1)
